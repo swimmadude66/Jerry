@@ -1,4 +1,4 @@
-import { createSession, handleSSO } from '@jerry/utils/auth'
+import { createSession, handleSSO, setAuthCookie } from '@jerry/utils/auth'
 import { COOKIE_CONFIG } from '@jerry/utils/config'
 import { verifyGoogleCredentials } from '@jerry/utils/google'
 import { NextResponse, type NextRequest } from 'next/server'
@@ -22,20 +22,9 @@ export async function POST(req: NextRequest) {
     const userEmail = await verifyGoogleCredentials(credential)
     const user = await handleSSO(userEmail)
     // create session
-    const {key: sessionKey, expires} = await createSession(user.id, COOKIE_CONFIG.expireMS)
+    const {key: sessionKey} = await createSession(user.id, COOKIE_CONFIG.expireMS)
     const res = NextResponse.redirect(new URL('/', req.url))
-    res.cookies.set(
-      COOKIE_CONFIG.name,
-      sessionKey,
-      {
-        name: COOKIE_CONFIG.name,
-        sameSite: true,
-        httpOnly: true,
-        domain: COOKIE_CONFIG.domain,
-        expires,
-        maxAge: expires / 1000,
-      }
-    )
+    await setAuthCookie(res, sessionKey)
     return res
   } catch (e) {
     console.error(e)

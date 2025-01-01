@@ -1,6 +1,11 @@
 import { Session, User } from '@jerry/types/auth';
 import { sql } from './db';
 import { genUUID, hash } from './crypto';
+import { NextRequest, type NextResponse } from 'next/server';
+import { getCookie, setCookie } from './cookies';
+import { COOKIE_CONFIG } from './config';
+
+const COOKIE_SIGNING_KEY = process.env.AUTH_COOKIE_SECRET
 
 export async function loginWithPassword({email, password}: {email: string; password: string}): Promise<User | undefined> {
 
@@ -58,7 +63,8 @@ export async function validateSession(sessionKey?: string): Promise<User | undef
       JOIN "user" on "session"."user_id" = "user"."id"
     WHERE 1=1
       AND "session"."key" = ${sessionKey} 
-      AND "session"."expires" > ${Date.now()} 
+      AND "session"."expires" > ${Date.now()}
+      AND "session"."active"
     LIMIT 1;
   `
   if (!session) {
@@ -70,4 +76,21 @@ export async function validateSession(sessionKey?: string): Promise<User | undef
 export async function createSession(userId: string, expireMS: number = 7 * 24 * 60 * 60 * 1000): Promise<Session> {
   const [session] = await sql`Insert into "session" ("key", "user_id", "expires") VALUES (${genUUID()}, ${userId}, ${Date.now() + expireMS}) returning key, expires;`
   return {key: session.key, expires: session.expires}
+}
+
+export async function setAuthCookie(res: NextResponse, sessionKey: string): Promise<void> {
+  await setCookie(res, {
+      name: COOKIE_CONFIG.name,
+      value: sessionKey,
+      domain: COOKIE_CONFIG.domain,
+      sameSite: true,
+      httpOnly: true,
+      expires: COOKIE_CONFIG.expireMS,
+      priority: 'high',
+      signingSecret: COOKIE_SIGNING_KEY
+    })
+}
+
+export async function getAuthCookie(req: NextRequest): Promise<string | undefined> {
+  return getCookie(req, {name: COOKIE_CONFIG.name, signingSecret: COOKIE_SIGNING_KEY})
 }

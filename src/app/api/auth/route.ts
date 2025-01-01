@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSession, registerUserPassword, validateSession } from '@jerry/utils/auth';
+import { createSession, getAuthCookie, registerUserPassword, setAuthCookie, validateSession } from '@jerry/utils/auth';
 import { COOKIE_CONFIG } from '@jerry/utils/config';
 
 export async function POST(req: NextRequest) {
@@ -23,24 +23,14 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({message: 'User already exists or cannot be registered. Please contact an administrator.'}, {status: 400})
   }
-  const {key: sessionKey, expires} = await createSession(user.id, COOKIE_CONFIG.expireMS)
+  const {key: sessionKey} = await createSession(user.id, COOKIE_CONFIG.expireMS)
   const res = NextResponse.redirect(new URL('/', req.url))
-  res.cookies.set(
-    {
-      name: COOKIE_CONFIG.name,
-      value: sessionKey,
-      domain: COOKIE_CONFIG.domain,
-      sameSite: true,
-      httpOnly: true,
-      expires,
-      maxAge: expires / 1000,
-    }
-  )
+  await setAuthCookie(res, sessionKey)
   return res
 }
 
 export async function GET(req: NextRequest) {
-  const sessionCookie = req.cookies.get(COOKIE_CONFIG.name)?.value
+  const sessionCookie = await getAuthCookie(req)
   if (!sessionCookie) {
     return NextResponse.json({valid: false}, {status: 403})
   }

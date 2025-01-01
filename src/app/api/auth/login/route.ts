@@ -1,4 +1,4 @@
-import { createSession, loginWithPassword } from '@jerry/utils/auth';
+import { createSession, loginWithPassword, setAuthCookie } from '@jerry/utils/auth';
 import { COOKIE_CONFIG } from '@jerry/utils/config';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -20,19 +20,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!user) {
     return NextResponse.json({message: 'Invalid username or password'}, {status: 400})
   }
-  const {key: sessionKey, expires} = await createSession(user.id, COOKIE_CONFIG.expireMS)
+  const {key: sessionKey} = await createSession(user.id, COOKIE_CONFIG.expireMS)
   
-  const res = NextResponse.redirect(new URL('/', req.url))
-  res.cookies.set(
-    {
-      name: COOKIE_CONFIG.name,
-      value: sessionKey,
-      domain: COOKIE_CONFIG.domain,
-      sameSite: true,
-      httpOnly: true,
-      expires,
-      maxAge: expires / 1000,
-    }
-  )
+  const res = NextResponse.json({message: `Logged in successfully as ${user.email}`})
+  await setAuthCookie(res,sessionKey)
   return res
 }
