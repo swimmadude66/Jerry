@@ -4,30 +4,25 @@ import { verifyGoogleCredentials } from '@jerry/utils/google'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  const fb = await req.formData()
-  if (!fb) {
-    throw new Error('Missing SSO token')
-  }
-  const credential = fb.get('credential')?.toString()
-  const bodyCsrfToken = fb.get('g_csrf_token')?.toString()
-  if (!credential || !bodyCsrfToken) {
-    throw new Error('Malformed SSO token')
-  }
-  const cookieCsrfToken = req.cookies.get('g_csrf_token')?.value
-  if (!cookieCsrfToken || cookieCsrfToken !== bodyCsrfToken) {
-    throw new Error('CSRF mismatch')
-  }
-
   try {
-    const userEmail = await verifyGoogleCredentials(credential)
-    const user = await handleSSO(userEmail)
+    const {credential, clientId} = await req.json()
+    if (!credential || !clientId) {
+      throw new Error('No Google token found')
+    }
+    if (clientId !== process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID) {
+      throw new Error('Google token does not correspond to correct application')
+    }
+    const googleUser = await verifyGoogleCredentials(credential)
+    // TODO filter by approved domains
+    const user = await handleSSO(googleUser)
     // create session
     const {key: sessionKey} = await createSession(user.id, COOKIE_CONFIG.expireMS)
-    const res = NextResponse.redirect(new URL('/', req.url))
+    const res = NextResponse.json({session: sessionKey, user})
+    // const res = NextResponse.redirect(new URL('/', req.url))
     await setAuthCookie(res, sessionKey)
     return res
   } catch (e) {
-    console.error(e)
-    return NextResponse.redirect(new URL('/auth', req.url))
+    console.error('Google auth error:', e)
+    return NextResponse.json({message: "Could not log in with Google", error: e}, {status: 400})
   }
 }

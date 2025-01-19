@@ -26,7 +26,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
-        <script src="https://accounts.google.com/gsi/client" async></script>
       </body>
     </html>
   );

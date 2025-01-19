@@ -5,6 +5,8 @@ CREATE table if not EXISTS "user" (
 	email varchar NOT NULL,
 	pass_hash varchar NULL,
 	pass_salt varchar NULL,
+	user_name text NULL,
+	avatar_url text NULL,
 	CONSTRAINT user_pk PRIMARY KEY (id),
 	CONSTRAINT user_unique UNIQUE (email)
 );
@@ -14,7 +16,17 @@ CREATE TABLE "session" (
 	"key" varchar NOT NULL,
 	expires int8 NOT NULL,
 	user_id uuid NOT NULL,
+	active bool DEFAULT true NOT NULL,
 	CONSTRAINT session_pk PRIMARY KEY (key),
 	CONSTRAINT session_unique UNIQUE (id),
 	CONSTRAINT session_user_fk FOREIGN KEY (user_id) REFERENCES "user"(id)
+);
+
+CREATE TABLE "resource" (
+	rowid bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+	id uuid DEFAULT uuid_generate_v4()::UUID NOT NULL,
+	"name" varchar NOT NULL,
+	description text NULL,
+	default_reserve_time int DEFAULT 21600 NOT NULL,
+	CONSTRAINT resource_pk PRIMARY KEY (id)
 );

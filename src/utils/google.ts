@@ -1,7 +1,16 @@
 import { verifyJWS } from './crypto';
 import { JWK } from 'node-jose'
 
-let cache: {value: JWK.KeyStore | null; expires: number} = {
+
+export interface GoogleUserInfo {
+  email: string
+  email_verified?: boolean
+  hd?: string
+  name?: string
+  picture?: string
+}
+
+const cache: {value: JWK.KeyStore | null; expires: number} = {
   value: null,
   expires: 0
 }
@@ -21,7 +30,7 @@ export async function getGoogleKeys(): Promise<JWK.KeyStore> {
   return keystore
 }
 
-export async function verifyGoogleCredentials(creds: string): Promise<string> {
+export async function verifyGoogleCredentials(creds: string): Promise<GoogleUserInfo> {
   const keys = await getGoogleKeys()
   const payloadBuffer = await verifyJWS(creds, keys)
   const payloadString = payloadBuffer.toString('utf8')
@@ -38,5 +47,6 @@ export async function verifyGoogleCredentials(creds: string): Promise<string> {
   if (now < nbf || now > exp) {
     throw new Error('Google credential is not valid at this time')
   }
-  return payload.email
+  const {hd, email, name, picture, email_verified} = payload
+  return {hd, email, name, picture, email_verified}
 }

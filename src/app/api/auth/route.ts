@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSession, getAuthCookie, registerUserPassword, setAuthCookie, validateSession } from '@jerry/utils/auth';
+import { createSession, deleteAuthCookie, getAuthCookie, invalidateSession, registerUserPassword, setAuthCookie, validateSession } from '@jerry/utils/auth';
 import { COOKIE_CONFIG } from '@jerry/utils/config';
 
 export async function POST(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({message: 'User already exists or cannot be registered. Please contact an administrator.'}, {status: 400})
   }
   const {key: sessionKey} = await createSession(user.id, COOKIE_CONFIG.expireMS)
-  const res = NextResponse.redirect(new URL('/', req.url))
+  const res = NextResponse.json({session: sessionKey, user: user}, {status: 200})
   await setAuthCookie(res, sessionKey)
   return res
 }
@@ -44,4 +44,14 @@ export async function GET(req: NextRequest) {
     console.error('Error validating session', e)
     return NextResponse.json({valid: false}, {status: 403})
   }
+}
+
+export async function DELETE(req: NextRequest) {
+  const sessionCookie = await getAuthCookie(req)
+  const res = NextResponse.json({message: 'Logged out'}, {status: 200})
+  if (sessionCookie) {
+    await invalidateSession(sessionCookie)
+  }
+  await deleteAuthCookie(res)
+  return res;
 }

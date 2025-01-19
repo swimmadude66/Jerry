@@ -49,6 +49,10 @@ export async function setCookie(res: NextResponse, {name = COOKIE_CONFIG.name, v
   )
 }
 
+export async function deleteCookie(res: NextResponse, key: string) {
+  res.cookies.delete(key)
+}
+
 export async function getCookie(req: NextRequest, {name, signingSecret}: CookieRetrievalOpts): Promise<string | undefined> {
   let value = req.cookies.get(name)?.value
   if (value && value.includes('.') && signingSecret) {
