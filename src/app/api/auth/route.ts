@@ -30,11 +30,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const sessionCookie = await getAuthCookie(req)
-  if (!sessionCookie) {
-    return NextResponse.json({valid: false}, {status: 403})
-  }
   try {
+    const sessionCookie = await getAuthCookie(req)
+    if (!sessionCookie) {
+      throw new Error('Missing session key')
+    }
     const sessionUser = await validateSession(sessionCookie)
     if (!sessionUser) {
       throw new Error('Provided session key is invalid')

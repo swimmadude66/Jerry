@@ -37,9 +37,12 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
   const {valid} = await checkAuthState(req)
-  if (reqPath === authRoute && valid) {
-    console.log('Already logged in, redirecting')
-    return NextResponse.redirect(new URL('/', req.url))
+  if (reqPath === authRoute) {
+    if (valid) {
+      console.log('Already logged in, redirecting')
+      return NextResponse.redirect(new URL('/', req.url))
+    }
+    return NextResponse.next()
   }
   if (!valid) {
     console.log('Invalid auth, redirecting')

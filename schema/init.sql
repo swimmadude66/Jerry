@@ -7,6 +7,7 @@ CREATE table if not EXISTS "user" (
 	pass_salt varchar NULL,
 	user_name text NULL,
 	avatar_url text NULL,
+	is_admin bool NOT NULL DEFAULT FALSE
 	CONSTRAINT user_pk PRIMARY KEY (id),
 	CONSTRAINT user_unique UNIQUE (email)
 );

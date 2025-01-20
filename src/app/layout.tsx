@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-sync-scripts */
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -28,7 +29,7 @@ export default function RootLayout({
     <AuthManagerProvider>
       <html lang="en">
         <head>
-          <script src="https://accounts.google.com/gsi/client" async></script>
+          <script src="https://accounts.google.com/gsi/client"></script>
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
           <HeaderBar />

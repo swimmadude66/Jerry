@@ -34,6 +34,7 @@ export async function verifySignedValue(signedValue: string, secret: string): Pr
       throw new Error('Signatures do not match')
     }
     return value
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     throw new Error('Could not verify signed value with provided secret')
   }
