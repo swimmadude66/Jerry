@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthManagerProvider } from '@jerry/managers/auth/react';
+import { HeaderBar } from '@jerry/components/header';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,10 +25,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-      </body>
-    </html>
+    <AuthManagerProvider>
+      <html lang="en">
+        <head>
+          <script src="https://accounts.google.com/gsi/client" async></script>
+        </head>
+        <body className={`${geistSans.variable} ${geistMono.variable}`}>
+          <HeaderBar />
+          {children}
+        </body>
+      </html>
+    </AuthManagerProvider>
+
   );
 }

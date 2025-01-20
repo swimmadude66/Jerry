@@ -4,13 +4,15 @@ import { COOKIE_CONFIG } from './utils/config';
 
 const PUBLIC_ROUTE_PREFIXES = [
   '/api',
-  '/auth',
   '/_next/static',
   '/_next/image',
   '/favicon.ico',
   '/sitemap.xml',
   '/robots.txt',
+  '/assets/'
 ]
+
+const authRoute = '/auth'
 
 async function checkAuthState(req: NextRequest): Promise<{valid: boolean; user?: User}> {
   const authCookie = req.cookies.get(COOKIE_CONFIG.name)?.value
@@ -30,17 +32,19 @@ async function checkAuthState(req: NextRequest): Promise<{valid: boolean; user?:
 }
 
 export default async function middleware(req: NextRequest) {
-  if (PUBLIC_ROUTE_PREFIXES.some((p) => req.nextUrl.pathname.startsWith(p))) {
+  const reqPath = req.nextUrl.pathname
+  if (PUBLIC_ROUTE_PREFIXES.some((p) => reqPath.startsWith(p))) {
     return NextResponse.next()
   }
-  const {valid, user} = await checkAuthState(req)
+  const {valid} = await checkAuthState(req)
+  if (reqPath === authRoute && valid) {
+    console.log('Already logged in, redirecting')
+    return NextResponse.redirect(new URL('/', req.url))
+  }
   if (!valid) {
     console.log('Invalid auth, redirecting')
     return NextResponse.redirect(new URL('/auth', req.url))
   }
   const res = NextResponse.next()
-  if (user) {
-    // cache user info in service?
-  }
   return res
 }
