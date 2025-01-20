@@ -22,14 +22,14 @@ export function padSecret(raw: string, length = 256): string {
 }
 
 export async function signValue(value: string, secret: string): Promise<string> {
-  const sig = await argonHash(value, {secret: Buffer.from(padSecret(secret))})
+  const sig = await argonHash(value, {salt: Buffer.from(padSecret(secret))})
   return `${jose.util.base64url.encode(value)}.${jose.util.base64url.encode(sig)}`
 }
 
 export async function verifySignedValue(signedValue: string, secret: string): Promise<string> {
   try {
     const [value, signature] = signedValue.split('.', 2).map((v) => jose.util.base64url.decode(v).toString('utf8'))
-    const sig = await argonHash(value, {secret: Buffer.from(padSecret(secret))})
+    const sig = await argonHash(value, {salt: Buffer.from(padSecret(secret))})
     if (sig !== signature) {
       throw new Error('Signatures do not match')
     }

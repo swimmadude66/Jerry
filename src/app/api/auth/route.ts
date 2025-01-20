@@ -31,17 +31,17 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const sessionCookie = await getAuthCookie(req)
-    if (!sessionCookie) {
-      throw new Error('Missing session key')
+    const sessionKey = await getAuthCookie(req)
+    if (!sessionKey) {
+      return NextResponse.json({valid: false}, {status: 403})
     }
-    const sessionUser = await validateSession(sessionCookie)
+    const sessionUser = await validateSession(sessionKey)
     if (!sessionUser) {
-      throw new Error('Provided session key is invalid')
+      throw new Error(`Provided session key is invalid: ${JSON.stringify({sessionKey})}`, )
     }
     return NextResponse.json({valid: true, user: sessionUser})
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
-    console.error('Error validating session', e)
     return NextResponse.json({valid: false}, {status: 403})
   }
 }
