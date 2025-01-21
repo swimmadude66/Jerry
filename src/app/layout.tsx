@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthManagerProvider } from '@jerry/managers/auth/react';
 import { HeaderBar } from '@jerry/components/header';
+import { Toaster } from '@jerry/components/ui/toaster';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,8 @@ export default function RootLayout({
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
           <HeaderBar />
-          {children}
+          <main>{children}</main>
+          <Toaster />
         </body>
       </html>
     </AuthManagerProvider>

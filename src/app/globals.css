@@ -47,17 +47,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 /* END MODERN CSS RESET */
 
-/* REM translation */
-/* I use a 10px rem for easy scaling */
-
-html {
-  font-size: 10px; /* initialize 1rem = 10px */
-}
-body {
-  font-size: 1.6rem; /* reset default font back to 16px */
-}
-/* END REM translation */
-
 /* global helper classes */
 .flex-spacer {
   flex: 0 1 100%;

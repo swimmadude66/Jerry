@@ -118,3 +118,20 @@ export async function deleteAuthCookie(res: NextResponse): Promise<void> {
 export async function getAuthCookie(req: NextRequest): Promise<string | undefined> {
   return getCookie(req, {name: COOKIE_CONFIG.name, signingSecret: COOKIE_SIGNING_KEY})
 }
+
+export async function getAuthUser(req: NextRequest): Promise<User | undefined> {
+  try {
+    const sessionKey = await getAuthCookie(req)
+    if (!sessionKey) {
+      return undefined
+    }
+    const sessionUser = await validateSession(sessionKey)
+    if (!sessionUser) {
+      return undefined
+    }
+    return sessionUser
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    return undefined
+  }
+}

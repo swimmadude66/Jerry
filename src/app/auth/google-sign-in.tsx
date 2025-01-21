@@ -52,6 +52,6 @@ export function GoogleSignIn({onAuthError}: {onAuthError?: (error: string) => vo
   }, [handleGoogleAuth])
 
   return (
-    <div id="google-signin-btn-container" ref={btnRef} style={{width: '24rem', height: '4rem', overflow: 'hidden', borderRadius: '4px'}} />
+    <div id="google-signin-btn-container" ref={btnRef} style={{width: '15rem', height: '2.5rem', overflow: 'hidden', borderRadius: '4px'}} />
   )
 }

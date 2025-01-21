@@ -3,6 +3,8 @@ import { COOKIE_CONFIG } from '@jerry/utils/config'
 import { verifyGoogleCredentials } from '@jerry/utils/google'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const allowedDomains = process.env.RESTRICT_TO_DOMAIN?.split(/\s*,\s*/).map((d) => d.toLowerCase()) ?? []
+
 export async function POST(req: NextRequest) {
   try {
     const {credential, clientId} = await req.json()
@@ -13,7 +15,12 @@ export async function POST(req: NextRequest) {
       throw new Error('Google token does not correspond to correct application')
     }
     const googleUser = await verifyGoogleCredentials(credential)
-    // TODO filter by approved domains
+    if (allowedDomains.length) {
+      // restrict to approved domains
+      if (!googleUser.email_verified || !googleUser.hd || !allowedDomains.includes(googleUser.hd.toLowerCase())) {
+        return NextResponse.json({message: 'User is not a member of the allowed domains for this workspace'}, {status: 403})
+      }
+    }
     const user = await handleSSO(googleUser)
     // create session
     const {key: sessionKey} = await createSession(user.id, COOKIE_CONFIG.expireMS)
